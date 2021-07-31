@@ -110,6 +110,7 @@
         <module>presto-i18n-functions</module>
         <module>presto-teradata-functions</module>
         <module>presto-example-http</module>
+        <!-- module>presto-delta</module -->
         <module>presto-local-file</module>
         <module>presto-tpch</module>
         <module>presto-tpcds</module>
