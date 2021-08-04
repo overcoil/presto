@@ -13,16 +13,20 @@
  */
 package com.facebook.presto.delta;
 
-import com.facebook.airlift.configuration.testing.ConfigAssertions;
-import org.testng.annotations.Test;
+import javax.inject.Inject;
 
-public class TestDeltaConfig
+public class DeltaMetadataFactory
 {
-    @Test
-    public void testDefaults()
+    private final DeltaClient deltaClient;
+
+    @Inject
+    public DeltaMetadataFactory(DeltaConfig config)
     {
-        ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(DeltaConfig.class)
-                .setDeltaLocation("/default/path/to")
-                .setDeltaTable("delta-table-dir"));
+        this.deltaClient = new DeltaClient(config.getDeltaLocation(), config.getDeltaTable());
+    }
+
+    public DeltaMetadata create()
+    {
+        return new DeltaMetadata(deltaClient);
     }
 }

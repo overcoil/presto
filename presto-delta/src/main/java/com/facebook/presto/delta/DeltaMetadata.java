@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.delta;
 
+import com.facebook.airlift.log.Logger;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorSession;
@@ -36,7 +37,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.facebook.presto.common.type.VarcharType.createUnboundedVarcharType;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
@@ -44,43 +44,41 @@ import static java.util.Objects.requireNonNull;
 public class DeltaMetadata
         implements ConnectorMetadata
 {
-    public static final String PRESTO_LOGS_SCHEMA = "pdelta";
-    public static final ColumnMetadata SERVER_ADDRESS_COLUMN = new ColumnMetadata("server_address", createUnboundedVarcharType());
-    private static final List<String> SCHEMA_NAMES = ImmutableList.of(PRESTO_LOGS_SCHEMA);
+    private static final Logger log = Logger.get(DeltaMetadata.class);
 
-    private final DeltaTables deltaTables;
+    private final DeltaClient deltaClient;
 
     @Inject
-    public DeltaMetadata(DeltaTables deltaTables)
+    public DeltaMetadata(
+            DeltaClient deltaClient)
     {
-        this.deltaTables = requireNonNull(deltaTables, "deltaTables is null");
+        this.deltaClient = requireNonNull(deltaClient, "deltaClient is null");
     }
 
     @Override
     public List<String> listSchemaNames(ConnectorSession session)
     {
-        // TODO: derive an appropriate schema name
-        return SCHEMA_NAMES;
+        return ImmutableList.copyOf(deltaClient.getSchemaNames());
     }
 
     @Override
     public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName)
     {
         requireNonNull(tableName, "tableName is null");
-        return deltaTables.getTable(tableName);
+        return deltaClient.getTableHandle(tableName);
     }
 
     @Override
     public ConnectorTableMetadata getTableMetadata(ConnectorSession session, ConnectorTableHandle table)
     {
         DeltaTableHandle tableHandle = (DeltaTableHandle) table;
-        return new ConnectorTableMetadata(tableHandle.getSchemaTableName(), deltaTables.getColumns(tableHandle));
+        return new ConnectorTableMetadata(tableHandle.getSchemaTableName(), deltaClient.getColumns(tableHandle));
     }
 
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, String schemaNameOrNull)
     {
-        return deltaTables.getTables();
+        return deltaClient.getTables();
     }
 
     @Override
@@ -109,7 +107,7 @@ public class DeltaMetadata
     {
         ImmutableMap.Builder<String, ColumnHandle> columnHandles = ImmutableMap.builder();
         int index = 0;
-        for (ColumnMetadata column : deltaTables.getColumns(tableHandle)) {
+        for (ColumnMetadata column : deltaClient.getColumns(tableHandle)) {
             columnHandles.put(column.getName(), new DeltaColumnHandle(index, column.getName(), column.getType()));
             index++;
         }
@@ -128,9 +126,9 @@ public class DeltaMetadata
         requireNonNull(prefix, "prefix is null");
         ImmutableMap.Builder<SchemaTableName, List<ColumnMetadata>> columns = ImmutableMap.builder();
         for (SchemaTableName tableName : listTables(session, prefix)) {
-            DeltaTableHandle tableHandle = deltaTables.getTable(tableName);
+            DeltaTableHandle tableHandle = deltaClient.getTableHandle(tableName);
             if (tableHandle != null) {
-                columns.put(tableName, deltaTables.getColumns(tableHandle));
+                columns.put(tableName, deltaClient.getColumns(tableHandle));
             }
         }
         return columns.build();

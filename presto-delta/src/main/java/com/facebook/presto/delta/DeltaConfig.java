@@ -26,8 +26,8 @@ import com.facebook.airlift.configuration.ConfigDescription;
  */
 public class DeltaConfig
 {
-    private String deltaLocation = "/tmp/delta";
-    private String deltaTable = "boston-housing";
+    private String deltaLocation = "/default/path/to";
+    private String deltaTable = "delta-table-dir";
 
     public String getDeltaLocation()
     {

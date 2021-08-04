@@ -21,6 +21,7 @@ import com.facebook.presto.spi.connector.ConnectorNodePartitioningProvider;
 import com.facebook.presto.spi.connector.ConnectorPageSourceProvider;
 import com.facebook.presto.spi.connector.ConnectorSplitManager;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
+import com.facebook.presto.spi.connector.classloader.ClassLoaderSafeConnectorMetadata;
 import com.facebook.presto.spi.transaction.IsolationLevel;
 
 import javax.inject.Inject;
@@ -35,21 +36,24 @@ public class DeltaConnector
     private static final Logger log = Logger.get(DeltaConnector.class);
 
     private final LifeCycleManager lifeCycleManager;
-    private final DeltaMetadata metadata;
-    private final DeltaSplitManager splitManager;
+    private final DeltaTransactionManager transactionManager;
+    private final DeltaMetadataFactory metadataFactory;
+    private final ConnectorSplitManager splitManager;
     private final ConnectorPageSourceProvider pageSourceProvider;
     private final ConnectorNodePartitioningProvider nodePartitioningProvider;
 
     @Inject
     public DeltaConnector(
             LifeCycleManager lifeCycleManager,
-            DeltaMetadata metadata,
-            DeltaSplitManager splitManager,
+            DeltaTransactionManager transactionManager,
+            DeltaMetadataFactory metadataFactory,
+            ConnectorSplitManager splitManager,
             ConnectorPageSourceProvider pageSourceProvider,
             ConnectorNodePartitioningProvider nodePartitioningProvider)
     {
         this.lifeCycleManager = requireNonNull(lifeCycleManager, "lifeCycleManager is null");
-        this.metadata = requireNonNull(metadata, "metadata is null");
+        this.transactionManager = requireNonNull(transactionManager, "transactionManager is null");
+        this.metadataFactory = requireNonNull(metadataFactory, "metadataFactory is null");
         this.splitManager = requireNonNull(splitManager, "splitManager is null");
         this.pageSourceProvider = requireNonNull(pageSourceProvider, "pageSourceProvider is null");
         this.nodePartitioningProvider = requireNonNull(nodePartitioningProvider, "nodePartitioningProvider is null");
@@ -63,9 +67,10 @@ public class DeltaConnector
     }
 
     @Override
-    public ConnectorMetadata getMetadata(ConnectorTransactionHandle transactionHandle)
+    public ConnectorMetadata getMetadata(ConnectorTransactionHandle transaction)
     {
-        return metadata;
+        ConnectorMetadata metadata = transactionManager.get(transaction);
+        return new ClassLoaderSafeConnectorMetadata(metadata, getClass().getClassLoader());
     }
 
     @Override
