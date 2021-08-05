@@ -22,7 +22,7 @@ public class TestDeltaConfig
     public void testDefaults()
     {
         ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(DeltaConfig.class)
-                .setDeltaLocation("/default/path/to")
-                .setDeltaTable("delta-table-dir"));
+                .setLocation("/default/path/to")
+                .setTableName("delta-table-dir"));
     }
 }

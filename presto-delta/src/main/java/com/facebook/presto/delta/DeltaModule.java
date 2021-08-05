@@ -34,6 +34,7 @@ import com.facebook.presto.hive.HiveNodePartitioningProvider;
 import com.facebook.presto.hive.MetastoreClientConfig;
 import com.facebook.presto.hive.cache.HiveCachingHdfsConfiguration;
 import com.facebook.presto.hive.gcs.GcsConfigurationInitializer;
+import com.facebook.presto.hive.gcs.HiveGcsConfig;
 import com.facebook.presto.hive.gcs.HiveGcsConfigurationInitializer;
 import com.facebook.presto.spi.connector.ConnectorNodePartitioningProvider;
 import com.facebook.presto.spi.connector.ConnectorPageSourceProvider;
@@ -75,7 +76,6 @@ public class DeltaModule
         configBinder(binder).bindConfig(FileMergeCacheConfig.class);
 
         // these are obvious
-        binder.bind(DeltaClient.class).in(Scopes.SINGLETON);
         binder.bind(DeltaConnector.class).in(Scopes.SINGLETON);
         binder.bind(DeltaHandleResolver.class).in(Scopes.SINGLETON);
         binder.bind(DeltaMetadataFactory.class).in(Scopes.SINGLETON);
@@ -92,12 +92,15 @@ public class DeltaModule
         // ditto
         binder.bind(DeltaTransactionManager.class).in(Scopes.SINGLETON);
         binder.bind(ConnectorSplitManager.class).to(DeltaSplitManager.class).in(Scopes.SINGLETON);
-        binder.bind(ConnectorPageSourceProvider.class).to(DeltaPageSourceProvider.class).in(Scopes.SINGLETON);
+
+        // isn't the following backward?
+        //binder.bind(ConnectorPageSourceProvider.class).to(DeltaPageSourceProvider.class).in(Scopes.SINGLETON);
+
         //binder.bind(ConnectorNodePartitioningProvider.class).to(DeltaPartitioningProvider.class).in(Scopes.SINGLETON);
 
         // for Hive things
         configBinder(binder).bindConfig(HiveClientConfig.class);
-        binder.bind(HdfsEnvironment.class).in(Scopes.SINGLETON);
+        // binder.bind(HdfsEnvironment.class).in(Scopes.SINGLETON);
         binder.bind(HdfsConfiguration.class).annotatedWith(ForMetastoreHdfsEnvironment.class).to(HiveCachingHdfsConfiguration.class).in(Scopes.SINGLETON);
         binder.bind(HdfsConfiguration.class).annotatedWith(ForCachingFileSystem.class).to(HiveHdfsConfiguration.class).in(Scopes.SINGLETON);
         binder.bind(HdfsConfigurationInitializer.class).in(Scopes.SINGLETON);
@@ -107,6 +110,7 @@ public class DeltaModule
         binder.bind(FileFormatDataSourceStats.class).in(Scopes.SINGLETON);
         newExporter(binder).export(FileFormatDataSourceStats.class).withGeneratedName();
         binder.bind(GcsConfigurationInitializer.class).to(HiveGcsConfigurationInitializer.class).in(Scopes.SINGLETON);
+        configBinder(binder).bindConfig(HiveGcsConfig.class);
     }
 
     @ForCachingHiveMetastore
