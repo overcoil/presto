@@ -42,7 +42,7 @@ public class DeltaTransactionManager
 
     public void put(ConnectorTransactionHandle transaction, DeltaMetadata metadata)
     {
-        ConnectorMetadata existing = transactions.putIfAbsent(transaction, metadata);
-        checkState(existing == null, "transaction already exists: %s", existing);
+        ConnectorMetadata previousValue = transactions.putIfAbsent(transaction, metadata);
+        checkState(previousValue == null);
     }
 }

@@ -15,6 +15,7 @@ package com.facebook.presto.delta;
 
 import com.facebook.airlift.bootstrap.LifeCycleManager;
 import com.facebook.airlift.log.Logger;
+import com.facebook.presto.spi.classloader.ThreadContextClassLoader;
 import com.facebook.presto.spi.connector.Connector;
 import com.facebook.presto.spi.connector.ConnectorMetadata;
 import com.facebook.presto.spi.connector.ConnectorNodePartitioningProvider;
@@ -60,8 +61,21 @@ public class DeltaConnector
     @Override
     public ConnectorTransactionHandle beginTransaction(IsolationLevel isolationLevel, boolean readOnly)
     {
+        // Delta's snapshot is at least READ_COMMITTED and possibly SERIALIZABLE;
+        // I made the conservative choice here.
         checkConnectorSupports(READ_COMMITTED, isolationLevel);
-        return DeltaTransactionHandle.INSTANCE;
+
+        ConnectorTransactionHandle transaction = new DeltaTransactionHandle();
+        try (ThreadContextClassLoader ignored = new ThreadContextClassLoader(getClass().getClassLoader())) {
+            transactionManager.put(transaction, metadataFactory.create());
+        }
+        return transaction;
+    }
+
+    @Override
+    public void commit(ConnectorTransactionHandle transaction)
+    {
+        transactionManager.remove(transaction);
     }
 
     @Override

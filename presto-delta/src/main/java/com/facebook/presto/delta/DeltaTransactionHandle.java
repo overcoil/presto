@@ -15,8 +15,12 @@ package com.facebook.presto.delta;
 
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 
-public enum DeltaTransactionHandle
+// This is a dead simple impl of a transaction handle.
+// The prototype connector is read-only so there isn't a need for anything more
+// but maybe authorizations/ACL will be needed down the line. FWIW, Iceberg uses
+// a HiveTransactionHandle.
+public class DeltaTransactionHandle
         implements ConnectorTransactionHandle
 {
-    INSTANCE
+    // this is intentionally blank
 }
