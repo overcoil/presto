@@ -13,18 +13,16 @@
  */
 package com.facebook.presto.delta;
 
-import com.facebook.airlift.bootstrap.Bootstrap;
 import com.facebook.presto.spi.ConnectorHandleResolver;
-import com.facebook.presto.spi.NodeManager;
 import com.facebook.presto.spi.connector.Connector;
 import com.facebook.presto.spi.connector.ConnectorContext;
 import com.facebook.presto.spi.connector.ConnectorFactory;
-import com.google.inject.Injector;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.base.Throwables.throwIfUnchecked;
-import static java.util.Objects.requireNonNull;
 
 public class DeltaConnectorFactory
         implements ConnectorFactory
@@ -44,22 +42,18 @@ public class DeltaConnectorFactory
     @Override
     public Connector create(String catalogName, Map<String, String> config, ConnectorContext context)
     {
-        requireNonNull(config, "config is null");
-
+        ClassLoader classLoader = DeltaConnectorFactory.class.getClassLoader();
         try {
-            Bootstrap app = new Bootstrap(
-                    binder -> binder.bind(NodeManager.class).toInstance(context.getNodeManager()),
-                    new DeltaModule(catalogName));
-
-            Injector injector = app
-                    .doNotInitializeLogging()
-                    .setRequiredConfigurationProperties(config)
-                    .initialize();
-
-            return injector.getInstance(DeltaConnector.class);
+            return (Connector) classLoader.loadClass(InternalDeltaConnectorFactory.class.getName())
+                    .getMethod("createConnector", String.class, Map.class, ConnectorContext.class, Optional.class)
+                    .invoke(null, catalogName, config, context, Optional.empty());
         }
-        catch (Exception e) {
-            throwIfUnchecked(e);
+        catch (InvocationTargetException e) {
+            Throwable targetException = e.getTargetException();
+            throwIfUnchecked(targetException);
+            throw new RuntimeException(targetException);
+        }
+        catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }

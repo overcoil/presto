@@ -24,8 +24,6 @@ import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.connector.classloader.ClassLoaderSafeConnectorMetadata;
 import com.facebook.presto.spi.transaction.IsolationLevel;
 
-import javax.inject.Inject;
-
 import static com.facebook.presto.spi.transaction.IsolationLevel.READ_COMMITTED;
 import static com.facebook.presto.spi.transaction.IsolationLevel.checkConnectorSupports;
 import static java.util.Objects.requireNonNull;
@@ -42,7 +40,7 @@ public class DeltaConnector
     private final ConnectorPageSourceProvider pageSourceProvider;
     private final ConnectorNodePartitioningProvider nodePartitioningProvider;
 
-    @Inject
+    // DeltaConnector follows Iceberg's example of using an internal factory that performs custom class loading.
     public DeltaConnector(
             LifeCycleManager lifeCycleManager,
             DeltaTransactionManager transactionManager,

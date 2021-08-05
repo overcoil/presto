@@ -39,6 +39,11 @@
 
         <dependency>
             <groupId>com.facebook.airlift</groupId>
+            <artifactId>event</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.facebook.airlift</groupId>
             <artifactId>json</artifactId>
         </dependency>
 
@@ -143,13 +148,11 @@
             <artifactId>jol-core</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.weakref</groupId>
             <artifactId>jmxutils</artifactId>
             <scope>compile</scope>
         </dependency>
-
 
         <!-- for testing -->
         <dependency>

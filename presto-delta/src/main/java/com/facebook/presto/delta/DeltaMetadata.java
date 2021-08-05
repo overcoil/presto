@@ -30,8 +30,6 @@ import com.facebook.presto.spi.connector.ConnectorMetadata;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import javax.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,7 +46,6 @@ public class DeltaMetadata
 
     private final DeltaConfig deltaConfig;
 
-    @Inject
     public DeltaMetadata(
             DeltaConfig deltaConfig)
     {
