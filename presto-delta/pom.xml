@@ -263,6 +263,8 @@
                                     <exclude>org.alluxio:alluxio-shaded-client</exclude>
                                     <exclude>org.codehaus.plexus:plexus-utils</exclude>
                                     <exclude>com.google.guava:guava</exclude>
+                                    <!-- added for DSR/Scala 2.12 -->
+                                    <exclude>org.scala-lang:scala-library</exclude>
                                 </excludes>
                             </requireUpperBoundDeps>
                         </rules>
