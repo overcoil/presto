@@ -214,7 +214,7 @@
         <!-- Delta Lake -->
         <dependency>
             <groupId>io.delta</groupId>
-            <artifactId>delta-standalone_2.11</artifactId>
+            <artifactId>delta-standalone_2.12</artifactId>
             <version>0.2.0</version>
             <exclusions>
                 <exclusion>
@@ -229,8 +229,46 @@
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
+
+                <!-- for upgrading to DSR 2.12 -->
+                <exclusion>
+                    <groupId>com.github.mjakubowski84</groupId>
+                    <artifactId>parquet4s-core_2.12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_2.12</artifactId>
+                </exclusion>
             </exclusions>
+
         </dependency>
 
     </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <configuration>
+                        <rules>
+                            <requireUpperBoundDeps>
+                                <excludes combine.children="append">
+                                    <!-- TODO: fix this in Airlift resolver -->
+                                    <exclude>org.alluxio:alluxio-shaded-client</exclude>
+                                    <exclude>org.codehaus.plexus:plexus-utils</exclude>
+                                    <exclude>com.google.guava:guava</exclude>
+                                </excludes>
+                            </requireUpperBoundDeps>
+                        </rules>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
