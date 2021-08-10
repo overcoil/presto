@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.facebook.presto</groupId>
+        <artifactId>presto-root</artifactId>
+        <version>0.257-SNAPSHOT</version>
+    </parent>
+
+    <!-- this is the new coordinate presto-delta uses in place of the DSR's original coordinate -->
+    <groupId>com.facebook.presto.delta</groupId>
+    <artifactId>presto-delta-shaded-dsr</artifactId>
+    <version>0.257-SNAPSHOT</version>
+    <name>presto-delta-shaded-dsr</name>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- unsure if this is needed -->
+<!--        <air.main.basedir>${project.parent.basedir}</air.main.basedir>-->
+
+        <assembly.attach>false</assembly.attach>
+        <shadeBase>com.facebook.presto.delta.internal</shadeBase>
+    </properties>
+
+    <dependencies>
+        <!-- this is the DSR jar we are shading -->
+        <dependency>
+            <groupId>io.delta</groupId>
+            <artifactId>delta-standalone_2.12</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+
+        <!-- we will shade some of the transitive dependencies originating from these direct dependencies -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>2.7.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <!--                <exclusion>-->
+                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+                <!--                    <artifactId>jackson-core</artifactId>-->
+                <!--                </exclusion>-->
+                <!--                <exclusion>-->
+                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+                <!--                    <artifactId>jackson-databind</artifactId>-->
+                <!--                </exclusion>-->
+                <!--                <exclusion>-->
+                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+                <!--                    <artifactId>jackson-annotations</artifactId>-->
+                <!--                </exclusion>-->
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>1.10.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <!--                <exclusion>-->
+                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+                <!--                    <artifactId>jackson-core</artifactId>-->
+                <!--                </exclusion>-->
+                <!--                <exclusion>-->
+                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+                <!--                    <artifactId>jackson-databind</artifactId>-->
+                <!--                </exclusion>-->
+                <!--                <exclusion>-->
+                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+                <!--                    <artifactId>jackson-annotations</artifactId>-->
+                <!--                </exclusion>-->
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <!-- beware version 2.4.3 has an inexplicable problem with the shaded JAR name... -->
+                <version>3.1.1</version>
+
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadeSourcesContent>true</shadeSourcesContent>
+
+                            <!-- NB: createDependencyReducedPom is default true -->
+<!--                            <dependencyReducedPomLocation>${project.build.directory}</dependencyReducedPomLocation>-->
+                            <artifactSet>
+                                <includes>
+                                    <!-- these are the API+impl of DSR that we keep/publish -->
+                                    <include>io.delta:*</include>
+
+                                    <!-- We will also copy/rename the following common version-clash dependencies. -->
+                                    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                    <include>com.fasterxml.jackson.core:jackson-databind</include>
+                                    <include>com.fasterxml.jackson.core:jackson-annotations</include>
+                                </includes>
+                                <excludes>
+                                    <!-- The shaded JAR output is not dependent on any other Presto module so exclude them. -->
+                                    <exclude>com.facebook.presto.*</exclude>
+                                </excludes>
+                            </artifactSet>
+
+                            <relocations>
+                                <relocation>
+                                    <!-- The renaming -->
+                                    <pattern>com.fasterxml.jackson.core</pattern>
+                                    <shadedPattern>${shadeBase}.com.fasterxml.jackson.core</shadedPattern>
+                                </relocation>
+                            </relocations>
+
+                            <!-- we lock in the name of the output JAR for presto-delta to use -->
+                            <finalName>presto-delta-shaded-dsr</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- We turn off the dependency check here since it's not meaningful -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <!-- We turn off the modernizer plugin since this shading module has no source file -->
+            <plugin>
+                <groupId>org.gaul</groupId>
+                <artifactId>modernizer-maven-plugin</artifactId>
+                <version>1.7.1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <rules>
+                        <requireUpperBoundDeps>
+                            <excludes combine.children="append">
+                                <!-- cribbed from parent but unclear if it's needed here... -->
+                                <!-- TODO: fix this in Airlift resolver -->
+                                <exclude>org.alluxio:alluxio-shaded-client</exclude>
+                                <exclude>org.codehaus.plexus:plexus-utils</exclude>
+                                <exclude>com.google.guava:guava</exclude>
+
+                                <!-- for DSR/Scala 2.12 -->
+                                <exclude>org.scala-lang:scala-library</exclude>
+                            </excludes>
+                        </requireUpperBoundDeps>
+                    </rules>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
