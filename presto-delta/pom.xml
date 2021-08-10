@@ -203,28 +203,34 @@
             <scope>test</scope>
         </dependency>
 
-<!--        &lt;!&ndash; Jackson dep cribbed f/Iceberg &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--            <artifactId>jackson-core</artifactId>-->
-<!--            <version>2.10.0</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
+        <!-- Jackson dep cribbed f/Iceberg -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.10.0</version>
+            <scope>compile</scope>
+        </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--            <artifactId>jackson-databind</artifactId>-->
-<!--            <version>2.10.0</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.0</version>
+            <scope>compile</scope>
+        </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--            <artifactId>jackson-annotations</artifactId>-->
-<!--            <version>2.10.0</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.10.0</version>
+            <scope>provided</scope>
+        </dependency>
 
+        <!-- needed by io.delta.standalone -->
+        <dependency>
+            <groupId>com.thoughtworks.paranamer</groupId>
+            <artifactId>paranamer</artifactId>
+            <version>2.8</version>
+        </dependency>
 
 
         <!-- Delta Lake -->
@@ -262,9 +268,10 @@
 
         <!-- use the shaded DSR instead of the original DSR -->
         <dependency>
-            <groupId>com.facebook.presto</groupId>
+            <groupId>com.facebook.presto.delta</groupId>
             <artifactId>presto-delta-shaded-dsr</artifactId>
-            <version>0.257-SNAPSHOT</version>
+            <version>0.2.0</version>
+            <classifier>shaded</classifier>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -299,18 +306,18 @@
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-core</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-databind</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-annotations</artifactId>-->
-<!--                </exclusion>-->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -330,18 +337,18 @@
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-core</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-databind</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-annotations</artifactId>-->
-<!--                </exclusion>-->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

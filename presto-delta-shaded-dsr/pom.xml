@@ -3,6 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.facebook.presto</groupId>
         <artifactId>presto-root</artifactId>
@@ -10,16 +11,14 @@
     </parent>
 
     <!-- coordinate of this module's output: shaded jar -->
-    <groupId>com.facebook.presto</groupId>
+    <groupId>com.facebook.presto.delta</groupId>
     <artifactId>presto-delta-shaded-dsr</artifactId>
-    <version>0.257-SNAPSHOT</version>
+    <!-- the version of the shaded JAR lines up with the source JAR; be careful to not set this to a SNAPSHOT version -->
+    <version>0.2.0</version>
     <name>presto-delta-shaded-dsr</name>
     <packaging>jar</packaging>
 
     <properties>
-        <!-- unsure if this is needed -->
-<!--        <air.main.basedir>${project.parent.basedir}</air.main.basedir>-->
-
         <assembly.attach>false</assembly.attach>
         <shadeBase>com.facebook.presto.delta.internal</shadeBase>
     </properties>
@@ -32,7 +31,7 @@
             <version>0.2.0</version>
         </dependency>
 
-        <!-- we will shade some of the transitive dependencies originating from these direct dependencies -->
+        <!-- we will shade some of the transitive dependencies originating from DSR's direct dependencies -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
@@ -50,18 +49,6 @@
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
-                <!--                <exclusion>-->
-                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-                <!--                    <artifactId>jackson-core</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-                <!--                    <artifactId>jackson-databind</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-                <!--                    <artifactId>jackson-annotations</artifactId>-->
-                <!--                </exclusion>-->
             </exclusions>
         </dependency>
         <dependency>
@@ -81,18 +68,6 @@
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
-                <!--                <exclusion>-->
-                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-                <!--                    <artifactId>jackson-core</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-                <!--                    <artifactId>jackson-databind</artifactId>-->
-                <!--                </exclusion>-->
-                <!--                <exclusion>-->
-                <!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-                <!--                    <artifactId>jackson-annotations</artifactId>-->
-                <!--                </exclusion>-->
             </exclusions>
         </dependency>
     </dependencies>
@@ -115,6 +90,7 @@
                         <configuration>
                             <createSourcesJar>true</createSourcesJar>
                             <shadeSourcesContent>true</shadeSourcesContent>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
 
                             <createDependencyReducedPom>true</createDependencyReducedPom>
                             <dependencyReducedPomLocation>${project.build.directory}</dependencyReducedPomLocation>
@@ -130,7 +106,7 @@
                                 </includes>
                                 <excludes>
                                     <!-- The shaded JAR output is not dependent on any other Presto module so exclude them. -->
-                                    <exclude>com.facebook.*</exclude>
+                                    <exclude>com.facebook.presto.*</exclude>
                                 </excludes>
                             </artifactSet>
 
@@ -149,9 +125,6 @@
                                     <shadedPattern>${shadeBase}.com.fasterxml.jackson.annotation</shadedPattern>
                                 </relocation>
                             </relocations>
-
-                            <!-- we lock in the name of the output JAR for presto-delta to use -->
-<!--                            <finalName>presto-delta-shaded-dsr</finalName>-->
                         </configuration>
                     </execution>
                 </executions>
