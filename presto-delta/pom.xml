@@ -203,11 +203,23 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- annotation is not shaded within the shaded DSR jar -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.12.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.12.0</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.10.0</version>
+            <version>2.12.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -334,10 +346,10 @@
                                     <exclude>com.google.guava:guava</exclude>
 
                                     <!-- added for DSR/Scala 2.12 -->
-                                    <exclude>org.scala-lang:scala-library</exclude>
+<!--                                    <exclude>org.scala-lang:scala-library</exclude>-->
 
                                     <!-- we've shaded the usage of this by the DSR -->
-                                    <exclude>com.thoughtworks.paranamer:paranamer</exclude>
+<!--                                    <exclude>com.thoughtworks.paranamer:paranamer</exclude>-->
                                 </excludes>
                             </requireUpperBoundDeps>
                         </rules>
