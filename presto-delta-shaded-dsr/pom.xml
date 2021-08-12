@@ -3,7 +3,6 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.facebook.presto</groupId>
         <artifactId>presto-root</artifactId>
@@ -31,7 +30,7 @@
             <version>0.2.0</version>
         </dependency>
 
-        <!-- we will shade some of the transitive dependencies originating from DSR's direct dependencies -->
+        <!-- we will shade some of the transitive dependencies originating from these direct dependencies -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
@@ -70,6 +69,30 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+<!--            <version>2.6.7</version>-->
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+<!--            <version>2.6.7</version>-->
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+<!--            <version>2.6.7</version>-->
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.12.11</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -102,7 +125,13 @@
                                     <!-- shade (copy/rename) the following dependencies: -->
                                     <include>com.fasterxml.jackson.core:jackson-core</include>
                                     <include>com.fasterxml.jackson.core:jackson-databind</include>
-                                    <include>com.fasterxml.jackson.core:jackson-annotations</include>
+<!--                                    <include>com.fasterxml.jackson.core:jackson-annotations</include>-->
+
+                                    <include>com.fasterxml.jackson.module:jackson-module-scala_2.12</include>
+                                    <include>com.fasterxml.jackson.module:jackson-module-paranamer</include>
+                                    <include>org.json4s:json4s-jackson_2.12</include>
+                                    <include>org.json4s:json4s-core_2.12</include>
+                                    <include>com.thoughtworks.paranamer:paranamer</include>
                                 </includes>
                                 <excludes>
                                     <!-- The shaded JAR output is not dependent on any other Presto module so exclude them. -->
@@ -120,10 +149,24 @@
                                     <pattern>com.fasterxml.jackson.databind</pattern>
                                     <shadedPattern>${shadeBase}.com.fasterxml.jackson.databind</shadedPattern>
                                 </relocation>
+<!--                                <relocation>-->
+<!--                                    <pattern>com.fasterxml.jackson.annotation</pattern>-->
+<!--                                    <shadedPattern>${shadeBase}.com.fasterxml.jackson.annotation</shadedPattern>-->
+<!--                                </relocation>-->
+
                                 <relocation>
-                                    <pattern>com.fasterxml.jackson.annotation</pattern>
-                                    <shadedPattern>${shadeBase}.com.fasterxml.jackson.annotation</shadedPattern>
+                                    <pattern>com.fasterxml.jackson.module</pattern>
+                                    <shadedPattern>${shadeBase}.com.fasterxml.jackson.module</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>org.json4s</pattern>
+                                    <shadedPattern>${shadeBase}.org.json4s</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.thoughtworks.paranamer</pattern>
+                                    <shadedPattern>${shadeBase}.com.thoughtworks.paranamer</shadedPattern>
+                                </relocation>
+
                             </relocations>
                         </configuration>
                     </execution>
@@ -161,9 +204,6 @@
                                 <exclude>org.alluxio:alluxio-shaded-client</exclude>
                                 <exclude>org.codehaus.plexus:plexus-utils</exclude>
                                 <exclude>com.google.guava:guava</exclude>
-
-                                <!-- for DSR/Scala 2.12 -->
-                                <exclude>org.scala-lang:scala-library</exclude>
                             </excludes>
                         </requireUpperBoundDeps>
                     </rules>

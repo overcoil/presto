@@ -203,21 +203,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Jackson dep cribbed f/Iceberg -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.10.0</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.10.0</version>
-            <scope>compile</scope>
-        </dependency>
-
+        <!-- annotation is not shaded within the shaded DSR jar -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -225,19 +211,64 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- needed by io.delta.standalone -->
+        <!-- use the shaded DSR instead of the original DSR -->
         <dependency>
-            <groupId>com.thoughtworks.paranamer</groupId>
-            <artifactId>paranamer</artifactId>
-            <version>2.8</version>
+            <groupId>com.facebook.presto.delta</groupId>
+            <artifactId>presto-delta-shaded-dsr</artifactId>
+            <version>0.2.0</version>
+            <classifier>shaded</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
-
-        <!-- Delta Lake -->
+        <!-- for Delta Standalone Reader 2.12 as documented -->
 <!--        <dependency>-->
-<!--            <groupId>io.delta</groupId>-->
-<!--            <artifactId>delta-standalone_2.12</artifactId>-->
-<!--            <version>0.2.0</version>-->
+<!--            <groupId>org.apache.hadoop</groupId>-->
+<!--            <artifactId>hadoop-client</artifactId>-->
+<!--            <version>2.7.2</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>io.netty</groupId>-->
+<!--                    <artifactId>netty</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>io.netty</groupId>-->
+<!--                    <artifactId>netty-all</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.apache.httpcomponents</groupId>-->
+<!--                    <artifactId>httpclient</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                    <artifactId>jackson-core</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                    <artifactId>jackson-databind</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                    <artifactId>jackson-annotations</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.parquet</groupId>-->
+<!--            <artifactId>parquet-hadoop</artifactId>-->
+<!--            <version>1.10.1</version>-->
 <!--            <exclusions>-->
 <!--                <exclusion>-->
 <!--                    <groupId>io.netty</groupId>-->
@@ -266,91 +297,6 @@
 <!--            </exclusions>-->
 <!--        </dependency>-->
 
-        <!-- use the shaded DSR instead of the original DSR -->
-        <dependency>
-            <groupId>com.facebook.presto.delta</groupId>
-            <artifactId>presto-delta-shaded-dsr</artifactId>
-            <version>0.2.0</version>
-            <classifier>shaded</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty-all</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- for Delta Standalone Reader 2.12 as documented -->
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>2.7.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty-all</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-hadoop</artifactId>
-            <version>1.10.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty-all</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
     </dependencies>
 
@@ -362,9 +308,12 @@
                 <configuration>
                     <!-- Maven erroneously flag these as unused... so we'll explicitly skip them for the while -->
                     <ignoredDependencies>
-                        <ignoredDependency>io.delta:delta-standalone_2.12:jar</ignoredDependency>
-                        <ignoredDependency>org.apache.hadoop:hadoop-client:jar</ignoredDependency>
-                        <ignoredDependency>org.apache.parquet:parquet-hadoop:jar</ignoredDependency>
+<!--                        <ignoredDependency>io.delta:delta-standalone_2.12:jar</ignoredDependency>-->
+<!--                        <ignoredDependency>org.apache.hadoop:hadoop-client:jar</ignoredDependency>-->
+<!--                        <ignoredDependency>org.apache.parquet:parquet-hadoop:jar</ignoredDependency>-->
+<!--                        <ignoredDependency>com.fasterxml.jackson.core:jackson-core</ignoredDependency>-->
+                        <ignoredDependency>com.fasterxml.jackson.core:jackson-databind</ignoredDependency>
+<!--                        <ignoredDependency>com.thoughtworks.paranamer:paranamer</ignoredDependency>-->
                     </ignoredDependencies>
                 </configuration>
             </plugin>
@@ -383,8 +332,12 @@
                                     <exclude>org.alluxio:alluxio-shaded-client</exclude>
                                     <exclude>org.codehaus.plexus:plexus-utils</exclude>
                                     <exclude>com.google.guava:guava</exclude>
+
                                     <!-- added for DSR/Scala 2.12 -->
                                     <exclude>org.scala-lang:scala-library</exclude>
+
+                                    <!-- we've shaded the usage of this by the DSR -->
+                                    <exclude>com.thoughtworks.paranamer:paranamer</exclude>
                                 </excludes>
                             </requireUpperBoundDeps>
                         </rules>
