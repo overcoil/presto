@@ -106,8 +106,6 @@ public class DeltaConfig
 
     public List<SchemaTableName> getTables()
     {
-        InitializeDSR();
-
         // we only support a single table inside the synthetic schema
         return ImmutableList.of(new SchemaTableName(schemaName, tableName));
     }
