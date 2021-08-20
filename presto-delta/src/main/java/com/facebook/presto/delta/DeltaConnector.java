@@ -15,6 +15,7 @@ package com.facebook.presto.delta;
 
 import com.facebook.airlift.bootstrap.LifeCycleManager;
 import com.facebook.airlift.log.Logger;
+import com.facebook.presto.hive.HiveTransactionHandle;
 import com.facebook.presto.spi.classloader.ThreadContextClassLoader;
 import com.facebook.presto.spi.connector.Connector;
 import com.facebook.presto.spi.connector.ConnectorMetadata;
@@ -65,7 +66,7 @@ public class DeltaConnector
         // I made the conservative choice here.
         checkConnectorSupports(READ_COMMITTED, isolationLevel);
 
-        ConnectorTransactionHandle transaction = new DeltaTransactionHandle();
+        ConnectorTransactionHandle transaction = new HiveTransactionHandle();
         try (ThreadContextClassLoader ignored = new ThreadContextClassLoader(getClass().getClassLoader())) {
             transactionManager.put(transaction, metadataFactory.create());
         }

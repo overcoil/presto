@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.delta;
 
+import com.facebook.presto.hive.HiveTransactionHandle;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.ConnectorSplit;
@@ -50,6 +51,6 @@ public class DeltaHandleResolver
     @Override
     public Class<? extends ConnectorTransactionHandle> getTransactionHandleClass()
     {
-        return DeltaTransactionHandle.class;
+        return HiveTransactionHandle.class;
     }
 }
