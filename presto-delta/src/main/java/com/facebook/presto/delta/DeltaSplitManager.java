@@ -19,11 +19,9 @@ import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.facebook.presto.spi.NodeManager;
 import com.facebook.presto.spi.connector.ConnectorSplitManager;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
-import io.delta.standalone.DeltaLog;
 
 import javax.inject.Inject;
 
-import static com.facebook.presto.delta.DeltaUtil.getDeltaTable;
 import static java.util.Objects.requireNonNull;
 
 // TODO: the prototype presents a single split for each table
@@ -31,11 +29,13 @@ public class DeltaSplitManager
         implements ConnectorSplitManager
 {
     private final NodeManager nodeManager;
+    private final DeltaConfig config;  // should be replaced by a DeltaClient object to enable sharing across multiple configured catalogs
 
     @Inject
-    public DeltaSplitManager(NodeManager nodeManager)
+    public DeltaSplitManager(NodeManager nodeManager, DeltaConfig cfg)
     {
         this.nodeManager = requireNonNull(nodeManager, "nodeManager is null");
+        this.config = requireNonNull(cfg, "config is null");
     }
 
     @Override
@@ -50,9 +50,7 @@ public class DeltaSplitManager
 
         // TODO: use layout to prune the splits to fetch
 
-        DeltaLog deltaTable = getDeltaTable(session, table.getSchemaTableName());
-
-        DeltaSplitSource splitSource = new DeltaSplitSource(deltaTable.snapshot().getAllFiles());
+        DeltaSplitSource splitSource = new DeltaSplitSource(config.getSnapshot().getAllFiles());
         return splitSource;
     }
 }

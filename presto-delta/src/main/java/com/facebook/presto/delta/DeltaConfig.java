@@ -21,6 +21,7 @@ import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.collect.ImmutableList;
 import io.delta.standalone.DeltaLog;
+import io.delta.standalone.Snapshot;
 import io.delta.standalone.types.StructField;
 import org.apache.hadoop.conf.Configuration;
 
@@ -151,5 +152,10 @@ public class DeltaConfig
         // the prototype is locked to one baked-in schema
         Set<String> lockedSet = new HashSet<>(Arrays.asList(schemaName));
         return lockedSet;
+    }
+
+    public Snapshot getSnapshot()
+    {
+        return deltaTable.snapshot();
     }
 }
