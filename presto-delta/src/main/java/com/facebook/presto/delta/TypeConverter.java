@@ -15,6 +15,8 @@ package com.facebook.presto.delta;
 
 import com.facebook.presto.common.type.BigintType;
 import com.facebook.presto.common.type.DoubleType;
+import com.facebook.presto.common.type.RealType;
+import com.facebook.presto.common.type.TimestampType;
 import com.facebook.presto.common.type.Type;
 import com.facebook.presto.common.type.VarcharType;
 
@@ -37,8 +39,16 @@ public final class TypeConverter
             return DoubleType.DOUBLE;
         }
 
+        if (type.getTypeName().equals("float")) {
+            return RealType.REAL;
+        }
+
         if (type.getTypeName().equals("string")) {
             return VarcharType.createUnboundedVarcharType();
+        }
+
+        if (type.getTypeName().equals("timestamp")) {
+            return TimestampType.TIMESTAMP;
         }
 
         throw new UnsupportedOperationException(format("Cannot convert from Delta type '%s' to Presto type", type.getTypeName()));
