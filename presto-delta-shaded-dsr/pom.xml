@@ -199,8 +199,8 @@
 
                                 <!-- covers jackson-core, jackson-databind, & jackson-annotation -->
                                 <relocation>
-                                    <pattern>com.fasterxml.jackson</pattern>
-                                    <shadedPattern>${shadeBase}.com.fasterxml.jackson</shadedPattern>
+                                    <pattern>com.fasterxml.jackson.core</pattern>
+                                    <shadedPattern>${shadeBase}.com.fasterxml.jackson.core</shadedPattern>
                                 </relocation>
 
                                 <!-- covers jackson-module-scala_2.12 & jackson-module-paranamer -->
