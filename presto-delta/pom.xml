@@ -224,7 +224,7 @@
         <dependency>
             <groupId>com.facebook.presto.delta</groupId>
             <artifactId>presto-delta-shaded-dsr</artifactId>
-            <version>0.2.0</version>
+            <version>0.2.1</version>
             <classifier>shaded</classifier>
             <exclusions>
                 <exclusion>
