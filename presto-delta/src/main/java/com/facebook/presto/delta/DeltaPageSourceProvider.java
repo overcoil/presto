@@ -98,6 +98,7 @@ public class DeltaPageSourceProvider
             HdfsEnvironment hdfsEnvironment,
             FileFormatDataSourceStats fileFormatDataSourceStats)
     {
+        // these are unused for the while
         this.hdfsEnvironment = requireNonNull(hdfsEnvironment, "hdfsEnvironment is null");
         this.fileFormatDataSourceStats = requireNonNull(fileFormatDataSourceStats, "fileFormatDataSourceStats is null");
     }
@@ -124,9 +125,10 @@ public class DeltaPageSourceProvider
         ConnectorPageSource dataPageSource = createDataPageSource(
                 session,
                 hdfsContext,
-                new Path(split.getPath()),
-                split.getStart(),
-                split.getLength(),
+                split.getConfig(),
+                new Path(split.getPathname()),
+                0, // ?? no idea why
+                100, // ?? no idea why
                 split.getFileFormat(),
                 table.getSchemaTableName(),
                 regularColumns,
@@ -138,6 +140,7 @@ public class DeltaPageSourceProvider
     private ConnectorPageSource createDataPageSource(
             ConnectorSession session,
             HdfsContext hdfsContext,
+            Configuration config,
             Path path,
             long start,
             long length,
@@ -152,7 +155,7 @@ public class DeltaPageSourceProvider
                         hdfsEnvironment,
                         hdfsContext,
                         session.getUser(),
-                        hdfsEnvironment.getConfiguration(hdfsContext, path),
+                        config,
                         path,
                         start,
                         length,
@@ -165,7 +168,7 @@ public class DeltaPageSourceProvider
                         isParquetBatchReaderVerificationEnabled(session),
                         fileFormatDataSourceStats);
             default:
-                throw new PrestoException(NOT_SUPPORTED, "File format not supported for Delta: " + fileFormat);
+                throw new PrestoException(NOT_SUPPORTED, "Unsupported Delta file format: " + fileFormat);
         }
     }
 
@@ -187,11 +190,6 @@ public class DeltaPageSourceProvider
             boolean verificationEnabled,
             FileFormatDataSourceStats fileFormatDataSourceStats)
     {
-        // was a parameter that we're not passing in in bid to reduce prototype complexity
-        //TupleDomain<DeltaColumnHandle> effectivePredicate = TupleDomain.none();
-
-        // Q: how do HdfsEnvironment & HiveHdfsConfiguration relate? Both of them have a Configuration
-
         // dropped trailing parameter TupleDomain<DeltaColumnHandle> effectivePredicate
         AggregatedMemoryContext systemMemoryContext = newSimpleAggregatedMemoryContext();
 

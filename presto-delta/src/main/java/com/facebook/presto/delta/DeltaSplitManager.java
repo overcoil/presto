@@ -14,13 +14,21 @@
 package com.facebook.presto.delta;
 
 import com.facebook.presto.spi.ConnectorSession;
+import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorSplitSource;
 import com.facebook.presto.spi.ConnectorTableLayoutHandle;
+import com.facebook.presto.spi.FixedSplitSource;
 import com.facebook.presto.spi.NodeManager;
 import com.facebook.presto.spi.connector.ConnectorSplitManager;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
+import io.delta.standalone.FileFormat;
+import io.delta.standalone.actions.AddFile;
 
 import javax.inject.Inject;
+
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -45,12 +53,16 @@ public class DeltaSplitManager
             ConnectorTableLayoutHandle layout,
             SplitSchedulingContext splitSchedulingContext)
     {
-        DeltaTableLayoutHandle layoutHandle = (DeltaTableLayoutHandle) layout;
-        DeltaTableHandle table = layoutHandle.getTable();
+        // this naive implementation uses FixedSplitSource and ignores partitions
+        // NB: config as a DSR client is wired for the one configured table so layout is superfluous
 
-        // TODO: use layout to prune the splits to fetch
+        List<ConnectorSplit> splits = new ArrayList<>();
+        for (AddFile addFile : config.getSnapshot().getAllFiles()) {
+            splits.add(new DeltaSplit(Paths.get(config.getLocation(), addFile.getPath()).toString(),
+                    FileFormat.PARQUET,
+                    config.getHadoopConf()));
+        }
 
-        DeltaSplitSource splitSource = new DeltaSplitSource(config.getSnapshot().getAllFiles());
-        return splitSource;
+        return new FixedSplitSource(splits);
     }
 }

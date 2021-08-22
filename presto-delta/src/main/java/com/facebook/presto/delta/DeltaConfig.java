@@ -105,6 +105,11 @@ public class DeltaConfig
         return this;
     }
 
+    public Configuration getHadoopConf()
+    {
+        return conf;
+    }
+
     public List<SchemaTableName> getTables()
     {
         // we only support a single table inside the synthetic schema

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import io.delta.standalone.FileFormat;
+import org.apache.hadoop.conf.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,46 +32,37 @@ import static java.util.Objects.requireNonNull;
 public class DeltaSplit
         implements ConnectorSplit
 {
-    private final String path;
-    private final long start;
-    private final long length;
+    private final String pathname;
     private final FileFormat fileFormat;
+    private final Configuration config;
 
     @JsonCreator
     public DeltaSplit(
             @JsonProperty("path") String path,
-            @JsonProperty("start") long start,
-            @JsonProperty("length") long length,
-            @JsonProperty("fileFormat") FileFormat fileFormat)
+            @JsonProperty("fileFormat") FileFormat fileFormat,
+            @JsonProperty("config") Configuration config)
     {
-        this.path = requireNonNull(path, "path is null");
-        this.start = start;
-        this.length = length;
+        this.pathname = requireNonNull(path, "path is null");
         this.fileFormat = requireNonNull(fileFormat, "fileFormat is null");
+        this.config = requireNonNull(config, "config is null");
     }
 
     @JsonProperty
-    public String getPath()
+    public String getPathname()
     {
-        return path;
-    }
-
-    @JsonProperty
-    public long getStart()
-    {
-        return start;
-    }
-
-    @JsonProperty
-    public long getLength()
-    {
-        return length;
+        return pathname;
     }
 
     @JsonProperty
     public FileFormat getFileFormat()
     {
         return fileFormat;
+    }
+
+    @JsonProperty
+    public Configuration getConfig()
+    {
+        return config;
     }
 
     @Override
@@ -90,9 +82,9 @@ public class DeltaSplit
     public Object getInfo()
     {
         return ImmutableMap.builder()
-                .put("path", path)
-                .put("start", start)
-                .put("length", length)
+                .put("path", pathname)
+                .put("fileFormat", fileFormat)
+                .put("config", config)
                 .build();
     }
 
@@ -100,9 +92,9 @@ public class DeltaSplit
     public String toString()
     {
         return toStringHelper(this)
-                .addValue(path)
-                .addValue(start)
-                .addValue(length)
+                .addValue(pathname)
+                .addValue(fileFormat)
+                .addValue(config)
                 .toString();
     }
 }
