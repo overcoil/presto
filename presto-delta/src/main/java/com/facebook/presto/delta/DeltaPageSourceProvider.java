@@ -78,7 +78,6 @@ import static com.facebook.presto.parquet.ParquetTypeUtils.getColumnIO;
 import static com.facebook.presto.parquet.ParquetTypeUtils.getDescriptors;
 import static com.facebook.presto.parquet.ParquetTypeUtils.getParquetTypeByName;
 import static com.facebook.presto.parquet.predicate.PredicateUtils.buildPredicate;
-import static com.facebook.presto.parquet.predicate.PredicateUtils.predicateMatches;
 import static com.facebook.presto.spi.StandardErrorCode.NOT_SUPPORTED;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
@@ -125,10 +124,8 @@ public class DeltaPageSourceProvider
         ConnectorPageSource dataPageSource = createDataPageSource(
                 session,
                 hdfsContext,
-                split.getConfig(),
+                deltaLayout.getTable().getConfig().getHadoopConfig(),
                 new Path(split.getPathname()),
-                0, // ?? no idea why
-                100, // ?? no idea why
                 split.getFileFormat(),
                 table.getSchemaTableName(),
                 regularColumns,
@@ -142,8 +139,6 @@ public class DeltaPageSourceProvider
             HdfsContext hdfsContext,
             Configuration config,
             Path path,
-            long start,
-            long length,
             FileFormat fileFormat,
             SchemaTableName tableName,
             List<DeltaColumnHandle> dataColumns,
@@ -157,8 +152,6 @@ public class DeltaPageSourceProvider
                         session.getUser(),
                         config,
                         path,
-                        start,
-                        length,
                         tableName,
                         dataColumns,
                         isUseParquetColumnNames(session),
@@ -179,8 +172,6 @@ public class DeltaPageSourceProvider
             String user,
             Configuration configuration,
             Path path,
-            long start,
-            long length,
             SchemaTableName tableName,
             List<DeltaColumnHandle> regularColumns,
             boolean useParquetColumnNames,
@@ -227,11 +218,7 @@ public class DeltaPageSourceProvider
 
             List<BlockMetaData> blocks = new ArrayList<>();
             for (BlockMetaData block : parquetMetadata.getBlocks()) {
-                long firstDataPage = block.getColumns().get(0).getFirstDataPageOffset();
-                if ((firstDataPage >= start) && (firstDataPage < (start + length)) &&
-                        predicateMatches(parquetPredicate, block, dataSource, descriptorsByPath, parquetTupleDomain, failOnCorruptedParquetStatistics)) {
-                    blocks.add(block);
-                }
+                blocks.add(block);
             }
 
             MessageColumnIO messageColumnIO = getColumnIO(fileSchema, requestedSchema);
@@ -278,7 +265,7 @@ public class DeltaPageSourceProvider
             if (e instanceof PrestoException) {
                 throw (PrestoException) e;
             }
-            String message = format("Error opening Iceberg split %s (offset=%s, length=%s): %s", path, start, length, e.getMessage());
+            String message = format("Error opening Iceberg split %s: %s", path, e.getMessage());
 
             if (e instanceof ParquetCorruptionException) {
                 throw new PrestoException(DELTA_BAD_DATA, message, e);

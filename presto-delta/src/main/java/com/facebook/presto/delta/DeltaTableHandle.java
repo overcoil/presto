@@ -28,19 +28,22 @@ public class DeltaTableHandle
 {
     private final String schemaName;
     private final String tableName;
-    private final Long snapshotId;
+    private final DeltaClient deltaClient;
+//    private final Long snapshotId;
     private final TupleDomain<DeltaColumnHandle> predicate;
 
     @JsonCreator
     public DeltaTableHandle(
             @JsonProperty("schemaName") String schemaName,
             @JsonProperty("tableName") String tableName,
-            @JsonProperty("snapshotId") Long snapshotId,
+            @JsonProperty("config") DeltaClient deltaClient,
+//            @JsonProperty("snapshotId") Long snapshotId,
             @JsonProperty("predicate") TupleDomain<DeltaColumnHandle> predicate)
     {
         this.schemaName = requireNonNull(schemaName, "schemaName is null");
         this.tableName = requireNonNull(tableName, "tableName is null");
-        this.snapshotId = requireNonNull(snapshotId, "snapshotId is null");
+        this.deltaClient = requireNonNull(deltaClient, "deltaClient is null");
+//        this.snapshotId = requireNonNull(snapshotId, "snapshotId is null");
         this.predicate = requireNonNull(predicate, "predicate is null");
     }
 
@@ -57,11 +60,17 @@ public class DeltaTableHandle
     }
 
     @JsonProperty
-    public Long getSnapshotId()
+    public DeltaClient getConfig()
     {
-        return snapshotId;
+        return deltaClient;
     }
 
+//    @JsonProperty
+//    public Long getSnapshotId()
+//    {
+//        return snapshotId;
+//    }
+//
     @JsonProperty
     public TupleDomain<DeltaColumnHandle> getPredicate()
     {
@@ -84,19 +93,20 @@ public class DeltaTableHandle
         }
         DeltaTableHandle that = (DeltaTableHandle) o;
         return Objects.equals(schemaName, that.schemaName) &&
-                Objects.equals(tableName, that.tableName) &&
-                Objects.equals(snapshotId, that.snapshotId);
+                Objects.equals(tableName, that.tableName);
+//                Objects.equals(snapshotId, that.snapshotId);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(schemaName, tableName, snapshotId);
+        return Objects.hash(schemaName, tableName, deltaClient);
     }
 
     @Override
     public String toString()
     {
-        return getSchemaTableName() + "@" + snapshotId;
+        // TODO: derive current; hack to force the conversion of getSchemaTableName() to String
+        return getSchemaTableName() + "@current";
     }
 }

@@ -81,6 +81,7 @@ public class DeltaModule
         // these are obvious
         binder.bind(DeltaHandleResolver.class).in(Scopes.SINGLETON);
         binder.bind(DeltaMetadataFactory.class).in(Scopes.SINGLETON);
+        binder.bind(DeltaClient.class).in(Scopes.SINGLETON);
 
         // inexplicable
         binder.bind(CacheStats.class).in(Scopes.SINGLETON);

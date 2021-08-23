@@ -17,6 +17,7 @@ import com.facebook.airlift.bootstrap.Bootstrap;
 import com.facebook.airlift.bootstrap.LifeCycleManager;
 import com.facebook.airlift.event.client.EventModule;
 import com.facebook.airlift.json.JsonModule;
+import com.facebook.presto.hive.NodeVersion;
 import com.facebook.presto.hive.authentication.HiveAuthenticationModule;
 import com.facebook.presto.hive.metastore.ExtendedHiveMetastore;
 import com.facebook.presto.hive.metastore.HiveMetastoreModule;
@@ -60,6 +61,8 @@ public final class InternalDeltaConnectorFactory
                     new HiveAuthenticationModule(),
                     new HiveMetastoreModule(catalogName, metastore),
                     binder -> {
+                        // ??
+                        binder.bind(NodeVersion.class).toInstance(new NodeVersion(context.getNodeManager().getCurrentNode().getVersion()));
                         binder.bind(NodeManager.class).toInstance(context.getNodeManager());
                         binder.bind(PageIndexerFactory.class).toInstance(context.getPageIndexerFactory());
                     });

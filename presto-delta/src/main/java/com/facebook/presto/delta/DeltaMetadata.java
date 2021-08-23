@@ -44,38 +44,38 @@ public class DeltaMetadata
 {
     private static final Logger log = Logger.get(DeltaMetadata.class);
 
-    private final DeltaConfig deltaConfig;
+    private final DeltaClient deltaClient;
 
     public DeltaMetadata(
-            DeltaConfig deltaConfig)
+            DeltaClient deltaClient)
     {
-        this.deltaConfig = requireNonNull(deltaConfig, "deltaConfig is null");
+        this.deltaClient = requireNonNull(deltaClient, "deltaClient is null");
     }
 
     @Override
     public List<String> listSchemaNames(ConnectorSession session)
     {
-        return ImmutableList.copyOf(deltaConfig.getSchemaNames());
+        return ImmutableList.copyOf(deltaClient.getSchemaNames());
     }
 
     @Override
     public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName)
     {
         requireNonNull(tableName, "tableName is null");
-        return deltaConfig.getTableHandle(tableName);
+        return deltaClient.getTableHandle(tableName);
     }
 
     @Override
     public ConnectorTableMetadata getTableMetadata(ConnectorSession session, ConnectorTableHandle table)
     {
         DeltaTableHandle tableHandle = (DeltaTableHandle) table;
-        return new ConnectorTableMetadata(tableHandle.getSchemaTableName(), deltaConfig.getColumns(tableHandle));
+        return new ConnectorTableMetadata(tableHandle.getSchemaTableName(), deltaClient.getColumns(tableHandle));
     }
 
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, String schemaNameOrNull)
     {
-        return deltaConfig.getTables();
+        return deltaClient.getTables();
     }
 
     @Override
@@ -104,7 +104,7 @@ public class DeltaMetadata
     {
         ImmutableMap.Builder<String, ColumnHandle> columnHandles = ImmutableMap.builder();
         int index = 0;
-        for (ColumnMetadata column : deltaConfig.getColumns(tableHandle)) {
+        for (ColumnMetadata column : deltaClient.getColumns(tableHandle)) {
             columnHandles.put(column.getName(), new DeltaColumnHandle(index, column.getName(), column.getType()));
             index++;
         }
@@ -123,9 +123,9 @@ public class DeltaMetadata
         requireNonNull(prefix, "prefix is null");
         ImmutableMap.Builder<SchemaTableName, List<ColumnMetadata>> columns = ImmutableMap.builder();
         for (SchemaTableName tableName : listTables(session, prefix)) {
-            DeltaTableHandle tableHandle = deltaConfig.getTableHandle(tableName);
+            DeltaTableHandle tableHandle = deltaClient.getTableHandle(tableName);
             if (tableHandle != null) {
-                columns.put(tableName, deltaConfig.getColumns(tableHandle));
+                columns.put(tableName, deltaClient.getColumns(tableHandle));
             }
         }
         return columns.build();

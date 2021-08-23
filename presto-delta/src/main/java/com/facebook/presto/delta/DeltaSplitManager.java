@@ -26,7 +26,6 @@ import io.delta.standalone.actions.AddFile;
 
 import javax.inject.Inject;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,13 +36,13 @@ public class DeltaSplitManager
         implements ConnectorSplitManager
 {
     private final NodeManager nodeManager;
-    private final DeltaConfig config;  // should be replaced by a DeltaClient object to enable sharing across multiple configured catalogs
+    private final DeltaClient deltaClient;
 
     @Inject
-    public DeltaSplitManager(NodeManager nodeManager, DeltaConfig cfg)
+    public DeltaSplitManager(NodeManager nodeManager, DeltaClient deltaClient)
     {
         this.nodeManager = requireNonNull(nodeManager, "nodeManager is null");
-        this.config = requireNonNull(cfg, "config is null");
+        this.deltaClient = requireNonNull(deltaClient, "deltaClient is null");
     }
 
     @Override
@@ -57,10 +56,8 @@ public class DeltaSplitManager
         // NB: config as a DSR client is wired for the one configured table so layout is superfluous
 
         List<ConnectorSplit> splits = new ArrayList<>();
-        for (AddFile addFile : config.getSnapshot().getAllFiles()) {
-            splits.add(new DeltaSplit(Paths.get(config.getLocation(), addFile.getPath()).toString(),
-                    FileFormat.PARQUET,
-                    config.getHadoopConf()));
+        for (AddFile addFile : deltaClient.getSnapshot().getAllFiles()) {
+            splits.add(new DeltaSplit(deltaClient.getPathName(), FileFormat.PARQUET));
         }
 
         return new FixedSplitSource(splits);
