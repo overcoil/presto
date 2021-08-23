@@ -68,7 +68,6 @@ import static org.weakref.jmx.guice.ExportBinder.newExporter;
 public class DeltaModule
         implements Module
 {
-    // we've followed Iceberg's example and removing the ctor & the connectorId member
     @Override
     public void configure(Binder binder)
     {
@@ -123,7 +122,7 @@ public class DeltaModule
     {
         return newFixedThreadPool(
                 metastoreClientConfig.getMaxMetastoreRefreshThreads(),
-                daemonThreadsNamed("hive-metastore-iceberg-%s"));
+                daemonThreadsNamed("hive-metastore-delta-%s"));
     }
 
     @Singleton
@@ -135,8 +134,8 @@ public class DeltaModule
                     cacheConfig,
                     fileMergeCacheConfig,
                     cacheStats,
-                    newScheduledThreadPool(5, daemonThreadsNamed("iceberg-cache-flusher-%s")),
-                    newScheduledThreadPool(1, daemonThreadsNamed("iceberg-cache-remover-%s")),
+                    newScheduledThreadPool(5, daemonThreadsNamed("delta-cache-flusher-%s")),
+                    newScheduledThreadPool(1, daemonThreadsNamed("delta-cache-remover-%s")),
                     newScheduledThreadPool(1, daemonThreadsNamed("hive-cache-size-calculator-%s")));
         }
         return new NoOpCacheManager();

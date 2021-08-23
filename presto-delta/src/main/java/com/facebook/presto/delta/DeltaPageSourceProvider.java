@@ -161,7 +161,7 @@ public class DeltaPageSourceProvider
         }
     }
 
-    // why did IcebergPageSourceProvider went with a private static for this?
+    // why is this private static?
     private static ConnectorPageSource createParquetPageSource(
             HdfsEnvironment hdfsEnvironment,
             HdfsContext hdfsContext,
@@ -261,7 +261,7 @@ public class DeltaPageSourceProvider
             if (e instanceof PrestoException) {
                 throw (PrestoException) e;
             }
-            String message = format("Error opening Iceberg split %s: %s", path, e.getMessage());
+            String message = format("Error opening Delta split %s: %s", path, e.getMessage());
 
             if (e instanceof ParquetCorruptionException) {
                 throw new PrestoException(DELTA_BAD_DATA, message, e);
