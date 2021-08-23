@@ -193,8 +193,7 @@
                                     <include>org.json4s:json4s-jackson_2.12</include>
                                     <include>org.json4s:json4s-core_2.12</include>
 
-                                    <include>org.apache.hadoop:hadoop-client</include>
-                                    <include>org.apache.hadoop:hadoop-common</include>
+                                    <!-- we rely on hadoop-client & hadoop-common to be provided by the user of this shaded DSR -->
 
                                 </includes>
                                 <excludes>
