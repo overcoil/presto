@@ -26,6 +26,7 @@ import io.delta.standalone.actions.AddFile;
 
 import javax.inject.Inject;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +58,8 @@ public class DeltaSplitManager
 
         List<ConnectorSplit> splits = new ArrayList<>();
         for (AddFile addFile : deltaClient.getSnapshot().getAllFiles()) {
-            splits.add(new DeltaSplit(deltaClient.getPathName(), FileFormat.PARQUET));
+            // the DeltaClient holds the path to the directory which needs to be augmented with the individual file's name
+            splits.add(new DeltaSplit(Paths.get(deltaClient.getPathName(), addFile.getPath()).toString(), FileFormat.PARQUET));
         }
 
         return new FixedSplitSource(splits);

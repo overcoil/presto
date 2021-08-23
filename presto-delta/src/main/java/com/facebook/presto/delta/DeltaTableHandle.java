@@ -28,23 +28,25 @@ public class DeltaTableHandle
 {
     private final String schemaName;
     private final String tableName;
-    private final DeltaClient deltaClient;
-//    private final Long snapshotId;
+    private final String pathName;
     private final TupleDomain<DeltaColumnHandle> predicate;
+
+    // NB this needs to be reconstructed and is not serialized
+    private final DeltaClient deltaClient;
 
     @JsonCreator
     public DeltaTableHandle(
             @JsonProperty("schemaName") String schemaName,
             @JsonProperty("tableName") String tableName,
-            @JsonProperty("config") DeltaClient deltaClient,
-//            @JsonProperty("snapshotId") Long snapshotId,
+            @JsonProperty("pathName") String pathName,
             @JsonProperty("predicate") TupleDomain<DeltaColumnHandle> predicate)
     {
         this.schemaName = requireNonNull(schemaName, "schemaName is null");
         this.tableName = requireNonNull(tableName, "tableName is null");
-        this.deltaClient = requireNonNull(deltaClient, "deltaClient is null");
-//        this.snapshotId = requireNonNull(snapshotId, "snapshotId is null");
+        this.pathName = requireNonNull(pathName, "pathName is null");
         this.predicate = requireNonNull(predicate, "predicate is null");
+
+        this.deltaClient = new DeltaClient(this.pathName);
     }
 
     @JsonProperty
@@ -60,21 +62,20 @@ public class DeltaTableHandle
     }
 
     @JsonProperty
-    public DeltaClient getConfig()
+    public String getPathName()
     {
-        return deltaClient;
+        return pathName;
     }
 
-//    @JsonProperty
-//    public Long getSnapshotId()
-//    {
-//        return snapshotId;
-//    }
-//
     @JsonProperty
     public TupleDomain<DeltaColumnHandle> getPredicate()
     {
         return predicate;
+    }
+
+    public DeltaClient getDeltaClient()
+    {
+        return deltaClient;
     }
 
     public SchemaTableName getSchemaTableName()
@@ -93,14 +94,15 @@ public class DeltaTableHandle
         }
         DeltaTableHandle that = (DeltaTableHandle) o;
         return Objects.equals(schemaName, that.schemaName) &&
-                Objects.equals(tableName, that.tableName);
-//                Objects.equals(snapshotId, that.snapshotId);
+                Objects.equals(tableName, that.tableName) &&
+                Objects.equals(pathName, that.pathName);
+        // TOOD: handle predicate too in the future
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(schemaName, tableName, deltaClient);
+        return Objects.hash(schemaName, tableName, pathName);
     }
 
     @Override

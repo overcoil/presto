@@ -31,27 +31,22 @@ import static java.util.Objects.requireNonNull;
 public class DeltaSplit
         implements ConnectorSplit
 {
-    private final String pathname;
+    private final String pathName;
     private final FileFormat fileFormat;
-//    private final DeltaConfig config;
 
     @JsonCreator
     public DeltaSplit(
-            @JsonProperty("path") String path,
+            @JsonProperty("pathName") String pathName,
             @JsonProperty("fileFormat") FileFormat fileFormat)
-//            @JsonProperty("config") DeltaConfig config)
     {
-        // HACK to push further
-        this.pathname = "/tmp/delta/boston-housing/part-00000-70e5db64-7a0c-4648-b2e8-58c1a8cd35dc-c000.snappy.parquet";
-//        this.pathname = requireNonNull(path, "path is null");
+        this.pathName = requireNonNull(pathName, "pathName is null");
         this.fileFormat = requireNonNull(fileFormat, "fileFormat is null");
-//        this.config = requireNonNull(config, "config is null");
     }
 
     @JsonProperty
-    public String getPathname()
+    public String getPathName()
     {
-        return pathname;
+        return pathName;
     }
 
     @JsonProperty
@@ -59,12 +54,6 @@ public class DeltaSplit
     {
         return fileFormat;
     }
-
-//    @JsonProperty
-//    public Configuration getHadoopConfig()
-//    {
-//        return config.getHadoopConf();
-//    }
 
     @Override
     public NodeSelectionStrategy getNodeSelectionStrategy()
@@ -83,9 +72,8 @@ public class DeltaSplit
     public Object getInfo()
     {
         return ImmutableMap.builder()
-                .put("path", pathname)
+                .put("path", pathName)
                 .put("fileFormat", fileFormat)
-//                .put("config", config)
                 .build();
     }
 
@@ -93,9 +81,8 @@ public class DeltaSplit
     public String toString()
     {
         return toStringHelper(this)
-                .addValue(pathname)
+                .addValue(pathName)
                 .addValue(fileFormat)
-//                .addValue(config)
                 .toString();
     }
 }

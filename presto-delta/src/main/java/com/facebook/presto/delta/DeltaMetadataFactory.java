@@ -17,16 +17,16 @@ import javax.inject.Inject;
 
 public class DeltaMetadataFactory
 {
-    private final DeltaClient deltaClient;
+    private final DeltaConfig deltaConfig;
 
     @Inject
-    public DeltaMetadataFactory(DeltaClient deltaClient)
+    public DeltaMetadataFactory(DeltaConfig deltaConfig)
     {
-        this.deltaClient = deltaClient;
+        this.deltaConfig = deltaConfig;
     }
 
     public DeltaMetadata create()
     {
-        return new DeltaMetadata(deltaClient);
+        return new DeltaMetadata(deltaConfig);
     }
 }

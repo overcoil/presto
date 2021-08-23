@@ -16,6 +16,11 @@ package com.facebook.presto.delta;
 import com.facebook.airlift.configuration.Config;
 import com.facebook.airlift.configuration.ConfigDescription;
 
+import javax.inject.Inject;
+
+import java.io.File;
+import java.nio.file.Paths;
+
 /*
   TODO: reformat
 
@@ -56,6 +61,7 @@ public class DeltaConfig
 //        return conf;
 //    }
 
+    @Inject
     public DeltaConfig()
     {
         this.schemaName = "default";
@@ -97,6 +103,19 @@ public class DeltaConfig
     {
         this.tableName = table;
         return this;
+    }
+
+    public String getPathname()
+    {
+        File file = Paths.get(location, tableName).toFile();
+
+        if (file.exists()) {
+            return file.toString();
+        }
+        else {
+            // probably a bad idea but this is exploratory
+            return "non-existent-Delta-table";
+        }
     }
 
 //    public List<SchemaTableName> getTables()

@@ -17,13 +17,13 @@ import com.facebook.presto.common.predicate.TupleDomain;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import io.delta.standalone.DeltaLog;
 import io.delta.standalone.Snapshot;
 import io.delta.standalone.types.StructField;
 import org.apache.hadoop.conf.Configuration;
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.inject.Inject;
 
@@ -36,31 +36,56 @@ import java.util.Set;
 
 import static com.facebook.presto.delta.DeltaErrorCode.DELTA_NO_TABLE;
 import static com.facebook.presto.delta.TypeConverter.toPrestoType;
-import static java.util.Objects.requireNonNull;
 
 public class DeltaClient
 {
-    private final DeltaConfig config;
+    private DeltaConfig config;
     private Configuration hadoopConf;
     private DeltaLog deltaTable;
     private String pathName = "/path/to/deltalake/table-dir";
 
     @Inject
-    @JsonCreator
     public DeltaClient(DeltaConfig config)
     {
-        this.config = requireNonNull(config, "config is null");
-        this.pathName = Paths.get(config.getLocation(), config.getTableName()).toString();
+        this.config = config;
+        this.pathName = config.getPathname();
 
-        this.hadoopConf = new Configuration();
+        this.hadoopConf = new org.apache.hadoop.conf.Configuration();
 
-        File dt = Paths.get(pathName).toFile();
-        if (dt.exists()) {
-            this.deltaTable = DeltaLog.forTable(this.hadoopConf, dt.getPath());
+        File file = Paths.get(this.pathName).toFile();
+        if (file.exists()) {
+            this.deltaTable = DeltaLog.forTable(this.hadoopConf, this.pathName);
         }
         else {
-            throw new PrestoException(DELTA_NO_TABLE, "No Delta table discovered at location: " + dt.getPath());
+            throw new PrestoException(DELTA_NO_TABLE, "No Delta table discovered at location: " + file.getPath());
         }
+    }
+
+    // Alternate c-tor for manual recreation of the client
+    public DeltaClient(String location, String tableName)
+    {
+        this.config = null;
+        this.hadoopConf = new org.apache.hadoop.conf.Configuration();
+
+        File file = Paths.get(location, tableName).toFile();
+
+        if (file.exists()) {
+            this.pathName = file.toString();
+            this.deltaTable = DeltaLog.forTable(this.hadoopConf, this.pathName);
+        }
+        else {
+            throw new PrestoException(DELTA_NO_TABLE, "No Delta table discovered at location: " + file.getPath());
+        }
+    }
+
+    @JsonCreator
+    public DeltaClient(@JsonProperty("pathName") String pathName)
+    {
+        this.config = null;
+        this.hadoopConf = new Configuration();
+
+        this.pathName = pathName;
+        this.deltaTable = DeltaLog.forTable(this.hadoopConf, this.pathName);
     }
 
     @JsonProperty
@@ -103,7 +128,7 @@ public class DeltaClient
     {
         return new DeltaTableHandle(tableName.getSchemaName(),
                 tableName.getTableName(),
-                this,
+                pathName,
                 TupleDomain.all());
     }
 

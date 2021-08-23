@@ -66,11 +66,6 @@ import static com.facebook.presto.delta.DeltaErrorCode.DELTA_BAD_DATA;
 import static com.facebook.presto.delta.DeltaErrorCode.DELTA_CANNOT_OPEN_SPLIT;
 import static com.facebook.presto.delta.DeltaErrorCode.DELTA_MISSING_DATA;
 import static com.facebook.presto.hive.HiveFileContext.DEFAULT_HIVE_FILE_CONTEXT;
-import static com.facebook.presto.hive.HiveSessionProperties.getParquetMaxReadBlockSize;
-import static com.facebook.presto.hive.HiveSessionProperties.isFailOnCorruptedParquetStatistics;
-import static com.facebook.presto.hive.HiveSessionProperties.isParquetBatchReaderVerificationEnabled;
-import static com.facebook.presto.hive.HiveSessionProperties.isParquetBatchReadsEnabled;
-import static com.facebook.presto.hive.HiveSessionProperties.isUseParquetColumnNames;
 import static com.facebook.presto.hive.parquet.HdfsParquetDataSource.buildHdfsParquetDataSource;
 import static com.facebook.presto.hive.parquet.ParquetPageSourceFactory.getParquetTupleDomain;
 import static com.facebook.presto.memory.context.AggregatedMemoryContext.newSimpleAggregatedMemoryContext;
@@ -81,6 +76,7 @@ import static com.facebook.presto.parquet.predicate.PredicateUtils.buildPredicat
 import static com.facebook.presto.spi.StandardErrorCode.NOT_SUPPORTED;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static io.airlift.units.DataSize.Unit.MEGABYTE;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -124,8 +120,8 @@ public class DeltaPageSourceProvider
         ConnectorPageSource dataPageSource = createDataPageSource(
                 session,
                 hdfsContext,
-                deltaLayout.getTable().getConfig().getHadoopConfig(),
-                new Path(split.getPathname()),
+                deltaLayout.getTable().getDeltaClient().getHadoopConfig(),
+                new Path(split.getPathName()),
                 split.getFileFormat(),
                 table.getSchemaTableName(),
                 regularColumns,
@@ -154,11 +150,11 @@ public class DeltaPageSourceProvider
                         path,
                         tableName,
                         dataColumns,
-                        isUseParquetColumnNames(session),
-                        isFailOnCorruptedParquetStatistics(session),
-                        getParquetMaxReadBlockSize(session),
-                        isParquetBatchReadsEnabled(session),
-                        isParquetBatchReaderVerificationEnabled(session),
+                        true, // isUseParquetColumnNames(session),
+                        false, // isFailOnCorruptedParquetStatistics(session),
+                        DataSize.succinctDataSize(5.0, MEGABYTE), // getParquetMaxReadBlockSize(session),
+                        true, // isParquetBatchReadsEnabled(session),
+                        false, // isParquetBatchReaderVerificationEnabled(session),
                         fileFormatDataSourceStats);
             default:
                 throw new PrestoException(NOT_SUPPORTED, "Unsupported Delta file format: " + fileFormat);

@@ -47,9 +47,9 @@ public class DeltaMetadata
     private final DeltaClient deltaClient;
 
     public DeltaMetadata(
-            DeltaClient deltaClient)
+            DeltaConfig deltaConfig)
     {
-        this.deltaClient = requireNonNull(deltaClient, "deltaClient is null");
+        this.deltaClient = new DeltaClient(deltaConfig);
     }
 
     @Override
