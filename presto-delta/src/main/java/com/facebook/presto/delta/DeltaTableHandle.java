@@ -46,7 +46,7 @@ public class DeltaTableHandle
         this.pathName = requireNonNull(pathName, "pathName is null");
         this.predicate = requireNonNull(predicate, "predicate is null");
 
-        this.deltaClient = new DeltaClient(this.pathName);
+        this.deltaClient = new DeltaClient(this.schemaName, this.pathName, this.tableName);
     }
 
     @JsonProperty

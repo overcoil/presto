@@ -28,10 +28,16 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import javax.inject.Inject;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.facebook.presto.delta.DeltaErrorCode.DELTA_NO_TABLE;
@@ -39,79 +45,124 @@ import static com.facebook.presto.delta.TypeConverter.toPrestoType;
 
 public class DeltaClient
 {
-    private DeltaConfig config;
     private Configuration hadoopConf;
     private DeltaLog deltaTable;
-    private String pathName = "/path/to/deltalake/table-dir";
+
+    private boolean tableScan;
+    private Map<String, String> availableTables;
+    private String schemaName = "default";
+    private String location = "/tmp/delta";
+    private String tableExpr = "*";
 
     @Inject
     public DeltaClient(DeltaConfig config)
     {
-        this.config = config;
-        this.pathName = config.getPathname();
-
+        // do this early
         this.hadoopConf = new org.apache.hadoop.conf.Configuration();
 
-        File file = Paths.get(this.pathName).toFile();
-        if (file.exists()) {
-            this.deltaTable = DeltaLog.forTable(this.hadoopConf, this.pathName);
-        }
-        else {
-            throw new PrestoException(DELTA_NO_TABLE, "No Delta table discovered at location: " + file.getPath());
-        }
-    }
+        // defer table scan and DeltaLog setup
+        this.availableTables = null;
+        this.deltaTable = null;
 
-    // Alternate c-tor for manual recreation of the client
-    public DeltaClient(String location, String tableName)
-    {
-        this.config = null;
-        this.hadoopConf = new org.apache.hadoop.conf.Configuration();
-
-        File file = Paths.get(location, tableName).toFile();
-
-        if (file.exists()) {
-            this.pathName = file.toString();
-            this.deltaTable = DeltaLog.forTable(this.hadoopConf, this.pathName);
-        }
-        else {
-            throw new PrestoException(DELTA_NO_TABLE, "No Delta table discovered at location: " + file.getPath());
-        }
+        this.schemaName = config.getSchemaName();
+        this.location = config.getLocation();
+        this.tableExpr = config.getTableName();
     }
 
     @JsonCreator
-    public DeltaClient(@JsonProperty("pathName") String pathName)
+    public DeltaClient(
+            @JsonProperty("schemaName") String schemaName,
+            @JsonProperty("location") String location,
+            @JsonProperty("tableExpr") String tableExpr)
     {
-        this.config = null;
-        this.hadoopConf = new Configuration();
+        this.hadoopConf = new org.apache.hadoop.conf.Configuration();
 
-        this.pathName = pathName;
-        this.deltaTable = DeltaLog.forTable(this.hadoopConf, this.pathName);
+        // defer table scan
+        this.tableScan = false;
+        this.availableTables = null;
     }
 
     @JsonProperty
-    public String getPathName()
+    public String getLocation()
     {
-        return pathName;
+        return location;
+    }
+
+    @JsonProperty
+    public String getTableExpr()
+    {
+        return tableExpr;
+    }
+
+    @JsonProperty
+    public String getSchemaName()
+    {
+        return schemaName;
     }
 
     public Set<String> getSchemaNames()
     {
-        Set<String> lockedSet = new HashSet<>(Arrays.asList(config.getSchemaName()));
+        Set<String> lockedSet = new HashSet<>(Arrays.asList(getSchemaName()));
         return lockedSet;
+    }
+
+    private void initTables()
+    {
+        // do a scan if we haven't already
+        if (availableTables == null) {
+            Path catalogueRoot = Paths.get(location);
+
+            // implicit wildcard if no table expression is specified
+            if (tableExpr.isEmpty()) {
+                tableExpr = "*";
+            }
+
+            this.availableTables = new HashMap<String, String>();
+
+            try (DirectoryStream<Path> paths = Files.newDirectoryStream(catalogueRoot, tableExpr)) {
+                for (Path path : paths) {
+                    // the discriminator is the presence of a _delta_lake directory
+                    if (Paths.get(path.toString(), "_delta_log").toFile().exists()) {
+                        String s = path.getFileName().toString().toLowerCase();
+                        availableTables.put(path.getFileName().toString().toLowerCase(), path.toString());
+                    }
+                }
+            }
+            catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     public List<SchemaTableName> getTables()
     {
-        // we only support a single table inside the synthetic schema
-        return ImmutableList.of(new SchemaTableName(config.getSchemaName(), config.getTableName()));
+        initTables();
+
+        ImmutableList.Builder<SchemaTableName> tablesBuilder = ImmutableList.builder();
+        availableTables.forEach((k, v) -> tablesBuilder.add(new SchemaTableName(getSchemaName(), k)));
+        return tablesBuilder.build();
+    }
+
+    private void initDSR(String tableName)
+    {
+        if (deltaTable == null) {
+            File file = Paths.get(location, tableName).toFile();
+            if (file.exists()) {
+                deltaTable = DeltaLog.forTable(hadoopConf, file.toString());
+            }
+            else {
+                throw new PrestoException(DELTA_NO_TABLE, "No Delta table found at location: " + file.getPath());
+            }
+        }
     }
 
     public List<ColumnMetadata> getColumns(DeltaTableHandle tableHandle)
     {
+        initDSR(tableHandle.getTableName());
+
         ImmutableList.Builder<ColumnMetadata> columnMetadataBuilder = ImmutableList.<ColumnMetadata>builder();
 
-        // REVISIT: This handles only primitive types in Delta's schema for the while.
-        // As well, toPrestoType only supports a limited set of primitive types at this time.
+        // NB: toPrestoType only supports a limited set of primitive types at this time.
         for (StructField column : deltaTable.snapshot().getMetadata().getSchema().getFields()) {
             ColumnMetadata item = ColumnMetadata.builder()
                     .setName(column.getName())
@@ -128,7 +179,7 @@ public class DeltaClient
     {
         return new DeltaTableHandle(tableName.getSchemaName(),
                 tableName.getTableName(),
-                pathName,
+                getPathForTable(tableName.getTableName()),
                 TupleDomain.all());
     }
 
@@ -137,8 +188,17 @@ public class DeltaClient
         return hadoopConf;
     }
 
-    public Snapshot getSnapshot()
+    public String getPathForTable(String tableName)
     {
+        initTables();
+
+        return availableTables.get(tableName);
+    }
+
+    public Snapshot getSnapshotForTable(String tableName)
+    {
+        initDSR(tableName);
+
         return deltaTable.snapshot();
     }
 }
