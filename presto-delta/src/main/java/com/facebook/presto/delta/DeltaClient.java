@@ -161,7 +161,7 @@ public class DeltaClient
                 deltaTable = DeltaLog.forTable(hadoopConf, file.toString());
             }
             else {
-                throw new PrestoException(DELTA_NO_TABLE, "No Delta table found at location: " + file.getPath());
+                throw new PrestoException(DELTA_NO_TABLE, "No such Delta table " + tableName);
             }
         }
     }

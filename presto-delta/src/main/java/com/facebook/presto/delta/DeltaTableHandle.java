@@ -43,7 +43,7 @@ public class DeltaTableHandle
     {
         this.schemaName = requireNonNull(schemaName, "schemaName is null");
         this.tableName = requireNonNull(tableName, "tableName is null");
-        this.pathName = requireNonNull(pathName, "pathName is null");
+        this.pathName = pathName;
         this.predicate = requireNonNull(predicate, "predicate is null");
 
         this.deltaClient = new DeltaClient(this.schemaName, this.pathName, this.tableName);
