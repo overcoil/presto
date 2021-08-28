@@ -46,10 +46,13 @@ import static com.facebook.presto.delta.TypeConverter.toPrestoType;
 public class DeltaClient
 {
     private Configuration hadoopConf;
+
+    private String effectiveDeltaTableName;
     private DeltaLog deltaTable;
 
-    private boolean tableScan;
     private Map<String, String> availableTables;
+
+    // only the following fields are persistent
     private String schemaName = "default";
     private String location = "/tmp/delta";
     private String tableExpr = "*";
@@ -60,9 +63,11 @@ public class DeltaClient
         // do this early
         this.hadoopConf = new org.apache.hadoop.conf.Configuration();
 
-        // defer table scan and DeltaLog setup
-        this.availableTables = null;
+        // defer DeltaLog setup and table scan
+        this.effectiveDeltaTableName = null;
         this.deltaTable = null;
+
+        this.availableTables = null;
 
         this.schemaName = config.getSchemaName();
         this.location = config.getLocation();
@@ -77,9 +82,17 @@ public class DeltaClient
     {
         this.hadoopConf = new org.apache.hadoop.conf.Configuration();
 
-        // defer table scan
-        this.tableScan = false;
+        // defer DeltaLog setup and table scan
+        this.effectiveDeltaTableName = null;
+        this.deltaTable = null;
+
         this.availableTables = null;
+    }
+
+    @JsonProperty
+    public String getSchemaName()
+    {
+        return schemaName;
     }
 
     @JsonProperty
@@ -92,12 +105,6 @@ public class DeltaClient
     public String getTableExpr()
     {
         return tableExpr;
-    }
-
-    @JsonProperty
-    public String getSchemaName()
-    {
-        return schemaName;
     }
 
     public Set<String> getSchemaNames()
@@ -145,9 +152,12 @@ public class DeltaClient
 
     private void initDSR(String tableName)
     {
-        if (deltaTable == null) {
+        // open the DeltaLog if havent' previously *or* re-open if this is a different table than what was opened previously
+        if (deltaTable == null || !effectiveDeltaTableName.equals(tableName)) {
+            // we do not rely initTables() though maybe we can...
             File file = Paths.get(location, tableName).toFile();
             if (file.exists()) {
+                effectiveDeltaTableName = tableName;
                 deltaTable = DeltaLog.forTable(hadoopConf, file.toString());
             }
             else {

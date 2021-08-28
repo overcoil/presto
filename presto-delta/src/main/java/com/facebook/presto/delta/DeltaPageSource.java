@@ -227,7 +227,7 @@ public class DeltaPageSource
                     type.getDisplayName(),
                     name));
         }
-        // Iceberg tables don't partition by non-primitive-type columns.
+        // cribbed comment; revisit: Iceberg tables don't partition by non-primitive-type columns.
         throw new PrestoException(GENERIC_INTERNAL_ERROR, "Invalid partition type " + type.toString());
     }
 }

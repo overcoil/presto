@@ -53,13 +53,16 @@ public class DeltaSplitManager
     {
         // downcast layout to to recover the target table
         DeltaTableLayoutHandle deltaTableLayoutHandle = (DeltaTableLayoutHandle) layout;
-        DeltaClient deltaClient = deltaTableLayoutHandle.getTable().getDeltaClient();
-        String tableName = deltaTableLayoutHandle.getTable().getTableName();
+        DeltaTableHandle deltaTableHandle = deltaTableLayoutHandle.getTable();
+        DeltaClient deltaClient = deltaTableHandle.getDeltaClient();
+        String tableName = deltaTableHandle.getTableName();
 
         List<ConnectorSplit> splits = new ArrayList<>();
         for (AddFile addFile : deltaClient.getSnapshotForTable(tableName).getAllFiles()) {
             // the DeltaClient holds the path to the directory which needs to be augmented with the individual AddFile's name
-            splits.add(new DeltaSplit(Paths.get(deltaClient.getPathForTable(tableName), addFile.getPath()).toString(), FileFormat.PARQUET));
+            String filename = addFile.getPath();
+            splits.add(new DeltaSplit(Paths.get(deltaClient.getPathForTable(tableName), filename).toString(),
+                                        FileFormat.fromFileName(filename)));
         }
 
         // this naive implementation uses FixedSplitSource and ignores partitions
